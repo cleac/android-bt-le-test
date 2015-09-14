@@ -1,16 +1,19 @@
 package io.github.cleac.bluetoothletest.ui.fragment;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +27,7 @@ import java.util.regex.Pattern;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import io.github.cleac.bluetoothletest.BluetoothScanner;
+import io.github.cleac.bluetoothletest.BuildConfig;
 import io.github.cleac.bluetoothletest.R;
 
 /**
@@ -31,11 +35,14 @@ import io.github.cleac.bluetoothletest.R;
  */
 public class BluetoothScanFragment extends Fragment {
 
+    public static final String LOG_TAG = BluetoothScanFragment.class.getSimpleName();
+
     @Bind(R.id.list) RecyclerView recyclerView;
     BluetoothListAdapter bluetoothListAdapter;
     BluetoothScanner bluetoothScanner;
 
-    public static final int ENABLE_BLUETOOTH=666;
+    public static final int ENABLE_BLUETOOTH = 666;
+    public static final int GET_LOCATION_PERMISSION = 666;
 
     @Nullable
     @Override
@@ -52,35 +59,62 @@ public class BluetoothScanFragment extends Fragment {
         bluetoothListAdapter = new BluetoothListAdapter()
                 .setNameFilter(null);
 
+        if (Build.VERSION.SDK_INT >= 23 &&
+                getContext().checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION},
+                    GET_LOCATION_PERMISSION);
+        } else {
+            initBt();
+        }
+
+        return rootView;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case GET_LOCATION_PERMISSION:
+                if(grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    initBt();
+                } else {
+                    Snackbar.make(getView().findViewById(R.id.root_bt_scan),
+                            "Cannot get scanning results",Snackbar.LENGTH_LONG)
+                            .show();
+                }
+        }
+    }
+
+    private void initBt() {
         bluetoothScanner = new BluetoothScanner(getContext());
 
         recyclerView.setAdapter(bluetoothListAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         bluetoothScanner.setLeScanCallback((device, rssi, scanRecord) ->
-                        bluetoothListAdapter.appendDevice(device)
-        );
+                getActivity().runOnUiThread(() -> bluetoothListAdapter.appendDevice(device)));
+
         bluetoothScanner.setOnScanningRestart(bluetoothListAdapter::clearDevices);
         bluetoothScanner.setOnScanningStart(bluetoothListAdapter::clearDevices);
-
-
-        return rootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if(!bluetoothScanner.isBluetoothAvailable()) {
-            startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE),ENABLE_BLUETOOTH);
-        } else {
-            bluetoothScanner.startScanning(false);
+        if(bluetoothScanner!=null) {
+            if (!bluetoothScanner.isBluetoothAvailable()) {
+                startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), ENABLE_BLUETOOTH);
+            } else {
+                bluetoothScanner.startScanning(false);
+            }
         }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        bluetoothScanner.stopScanning();
+        if(bluetoothScanner!=null)
+            bluetoothScanner.stopScanning();
     }
 
     @Override
@@ -129,25 +163,26 @@ public class BluetoothScanFragment extends Fragment {
         }
 
         public void appendDevice(BluetoothDevice device) {
-            if(mFilter==null || Pattern.matches(mFilter,device.getName()) ) {
+            Log.d(LOG_TAG,"Found device " + device.getName());
+            if(mFilter == null || Pattern.matches(mFilter,device.getName()) ) {
                 mDevices.add(device);
-                getActivity().runOnUiThread(this::notifyDataSetChanged);
+                notifyDataSetChanged();
             }
         }
 
         public void appendDevices(List<BluetoothDevice> devicesList) {
             mDevices.addAll(devicesList);
-            getActivity().runOnUiThread(this::notifyDataSetChanged);
+            notifyDataSetChanged();
         }
 
         public void removeDevice(int position) {
             mDevices.remove(position);
-            getActivity().runOnUiThread(this::notifyDataSetChanged);
+            notifyDataSetChanged();
         }
 
         public void clearDevices() {
             mDevices.clear();
-            getActivity().runOnUiThread(this::notifyDataSetChanged);
+            notifyDataSetChanged();
         }
 
         @Override
