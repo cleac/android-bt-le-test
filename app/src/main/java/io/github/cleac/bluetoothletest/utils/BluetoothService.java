@@ -1,10 +1,6 @@
-package io.github.cleac.bluetoothletest;
+package io.github.cleac.bluetoothletest.utils;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.app.TaskStackBuilder;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -20,9 +16,11 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-
 import java.util.List;
 import java.util.UUID;
+
+import io.github.cleac.bluetoothletest.LocalStorage;
+import io.github.cleac.bluetoothletest.SupportedGattAttributes;
 
 /**
  * Created by cleac on 7/12/15.
@@ -95,7 +93,7 @@ public class BluetoothService extends Service {
             Log.i(LOG_TAG, "Characteristic got");
             if(characteristic.getUuid().equals(UUID.fromString(SupportedGattAttributes.Characteristics.Heartrate))) {
                 int flag = characteristic.getProperties();
-                int format = -1;
+                int format;
                 if((flag & 0x01) != 0) {
                     format = BluetoothGattCharacteristic.FORMAT_UINT16;
                 } else {
@@ -178,9 +176,6 @@ public class BluetoothService extends Service {
             BluetoothManager mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             BluetoothAdapter mBluetoothAdapter = mBluetoothManager.getAdapter();
             BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(LocalStorage.getDeviceAddress(this));
-            if (device == null) {
-                Log.e(LOG_TAG, "Bluetooth device not found");
-            }
             mBluetoothGatt = device.connectGatt(this, true, mGattCallback);
         } else {
             mBluetoothGatt.connect();

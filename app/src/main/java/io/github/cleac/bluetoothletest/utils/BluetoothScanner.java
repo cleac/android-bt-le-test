@@ -1,4 +1,4 @@
-package io.github.cleac.bluetoothletest;
+package io.github.cleac.bluetoothletest.utils;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;

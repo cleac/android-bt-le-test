@@ -2,9 +2,6 @@ package io.github.cleac.bluetoothletest.ui.activity;
 
 import android.app.Fragment;
 import android.os.Bundle;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -31,6 +28,15 @@ public class BaseActivity extends AppCompatActivity {
                 .replace(R.id.fragment,fragment)
                 .commit();
         mFragment = fragment;
+    }
+
+    public Toolbar getToolbar() {
+        return mToolbar;
+    }
+
+    public void setToolbar(Toolbar toolbar) {
+        mToolbar = toolbar;
+        setSupportActionBar(toolbar);
     }
 
     @Override
