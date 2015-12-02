@@ -21,8 +21,10 @@ import android.widget.Toast;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import io.github.cleac.bluetoothletest.LocalStorage;
 import io.github.cleac.bluetoothletest.R;
 import io.github.cleac.bluetoothletest.ui.adapter.BluetoothListAdapter;
+import io.github.cleac.bluetoothletest.utils.BluetoothService;
 
 /**
  * Created by cleac on 9/14/15.
@@ -52,16 +54,17 @@ public class BluetoothScanFragment extends Fragment {
         ButterKnife.bind(this, rootView);
         bluetoothListAdapter = new BluetoothListAdapter(getActivity())
                 .setNameFilter(null);
-        bluetoothListAdapter.setOnItemClickedListener((device) -> Toast.makeText(getActivity(),
-                "Clicked device " + device.getAddress(), Toast.LENGTH_SHORT).show());
+        bluetoothListAdapter.setOnItemClickedListener((device) -> {
+            Toast.makeText(getActivity(),
+                    "Saved address  " + device.getAddress(), Toast.LENGTH_SHORT).show();
+            LocalStorage.saveDeviceAddress(getActivity(),device.getAddress());
+            getActivity().stopService(new Intent(getActivity(),BluetoothService.class));
+            getActivity().startService(new Intent(getActivity(), BluetoothService.class));
+        });
         bluetoothListAdapter.setOnItemAddedListener((newCount -> mScanningLayout.setVisibility
                 ((newCount == 0) ? View.VISIBLE : View.GONE)));
         mDevicesRecyclerView.setAdapter(bluetoothListAdapter);
-        mDevicesRecyclerView.setLayoutManager(new
-
-                LinearLayoutManager(getActivity()
-
-        ));
+        mDevicesRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
         return rootView;
     }
 
