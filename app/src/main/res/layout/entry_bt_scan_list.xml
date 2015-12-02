@@ -1,22 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="?attr/selectableItemBackground">
+
     <TextView
         android:id="@+id/name"
+        style="@style/Base.TextAppearance.AppCompat.Large"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        style="@style/Base.TextAppearance.AppCompat.Large"
-        android:paddingTop="8dp"/>
+        android:paddingTop="8dp" />
+
     <TextView
         android:id="@+id/address"
+        style="@style/Base.AlertDialog.AppCompat.Light"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/name"
         android:padding="8dp"
-        style="@style/Base.AlertDialog.AppCompat.Light"
-        android:textColor="#999999"/>
+        android:textColor="#999999" />
 
 </RelativeLayout>
